@@ -14,7 +14,7 @@ export const translations: Translations = {
   // Common
   appName: { id: 'Asisten Keuangan', en: 'Asisten Keuangan' },
   welcome: { id: 'Selamat Datang', en: 'Welcome' },
-  privacyNoteHeader: { id: 'Semua data tersimpan aman di HP kamu', en: 'All data is stored safely on your phone' },
+  privacyNoteHeader: { id: 'semua data hanya tersimpan di HP kamu,', en: 'all data is only stored on your phone,' },
   privacyNoteForm: { id: 'Data ini hanya akan disimpan di HP kamu secara lokal.', en: 'This data will only be stored locally on your phone.' },
   
   // Navigation
@@ -30,7 +30,7 @@ export const translations: Translations = {
   recentTransactions: { id: 'Transaksi Terakhir', en: 'Recent Transactions' },
   viewAll: { id: 'Liat Semua', en: 'View All' },
   noTransactions: { id: 'Belum ada transaksi', en: 'No transactions yet' },
-  spendingCategory: { id: 'Kategori Pengeluaran', en: 'Spending Category' },
+  spendingCategory: { id: 'Top Pengeluaran', en: 'Top Spending' },
   spendingDistribution: { id: 'Distribusi Pengeluaran', en: 'Spending Distribution' },
   
   // Add Transaction
@@ -41,11 +41,26 @@ export const translations: Translations = {
   notePlaceholder: { id: 'Keterangan transaksi...', en: 'Transaction description...' },
   date: { id: 'Tanggal', en: 'Date' },
   saveTransaction: { id: 'Simpan Transaksi', en: 'Save Transaction' },
+  nominalRequired: { id: 'Nominal harus diisi ya', en: 'Please enter the amount' },
+  categoryRequired: { id: 'Pilih kategori dulu ya', en: 'Please select a category' },
   
   // History
   noTransactionsHistory: { id: 'Belum ada riwayat transaksi', en: 'No transaction history yet' },
   deleteConfirm: { id: 'Hapus transaksi ini?', en: 'Delete this transaction?' },
   delete: { id: 'Hapus', en: 'Delete' },
+  viewAllTransactions: { id: 'Transaksi lainnya', en: 'View all transactions' },
+  last30Days: { id: '30 Hari Terakhir', en: 'Last 30 Days' },
+  today: { id: 'Hari Ini', en: 'Today' },
+  thisMonth: { id: 'Bulan Ini', en: 'This Month' },
+  thisYear: { id: 'Tahun Ini', en: 'This Year' },
+  selectPeriod: { id: 'Pilih Periode', en: 'Select Period' },
+  selectDate: { id: 'Pilih Tanggal', en: 'Select Date' },
+  startDate: { id: 'Tanggal Mulai', en: 'Start Date' },
+  endDate: { id: 'Tanggal Selesai', en: 'End Date' },
+  allTransactions: { id: 'Semua Transaksi', en: 'All Transactions' },
+  monthlySummary: { id: 'Ringkasan Bulanan', en: 'Monthly Summary' },
+  out: { id: 'Keluar', en: 'Out' },
+  in: { id: 'Masuk', en: 'In' },
   
   // Settings
   localUser: { id: 'Asisten Keuangan', en: 'Asisten Keuangan' },

@@ -8,15 +8,23 @@ export interface Transaction {
   id: string;
   amount: number;
   category: string;
+  icon?: string;
   note: string;
   date: string;
   type: TransactionType;
+}
+
+interface UserProfile {
+  name: string;
+  image: string;
 }
 
 interface FinanceContextType {
   transactions: Transaction[];
   addTransaction: (t: Omit<Transaction, 'id'>) => void;
   deleteTransaction: (id: string) => void;
+  userProfile: UserProfile;
+  updateProfile: (profile: Partial<UserProfile>) => void;
   balance: number;
   totalIncome: number;
   totalExpense: number;
@@ -26,13 +34,20 @@ const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
 
 export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfile>({ name: 'Nama Kamu', image: '' });
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('asisten_keuangan_data');
-    if (saved) {
-      setTransactions(JSON.parse(saved));
+    const savedData = localStorage.getItem('asisten_keuangan_data');
+    if (savedData) {
+      setTransactions(JSON.parse(savedData));
     }
+    
+    const savedProfile = localStorage.getItem('asisten_keuangan_profile');
+    if (savedProfile) {
+      setUserProfile(JSON.parse(savedProfile));
+    }
+    
     setIsLoaded(true);
   }, []);
 
@@ -41,6 +56,12 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       localStorage.setItem('asisten_keuangan_data', JSON.stringify(transactions));
     }
   }, [transactions, isLoaded]);
+
+  useEffect(() => {
+    if (isLoaded) {
+      localStorage.setItem('asisten_keuangan_profile', JSON.stringify(userProfile));
+    }
+  }, [userProfile, isLoaded]);
 
   const addTransaction = (t: Omit<Transaction, 'id'>) => {
     const newTransaction = {
@@ -52,6 +73,10 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const deleteTransaction = (id: string) => {
     setTransactions(prev => prev.filter(t => t.id !== id));
+  };
+
+  const updateProfile = (profile: Partial<UserProfile>) => {
+    setUserProfile(prev => ({ ...prev, ...profile }));
   };
 
   const totalIncome = transactions
@@ -69,6 +94,8 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       transactions, 
       addTransaction, 
       deleteTransaction, 
+      userProfile,
+      updateProfile,
       balance, 
       totalIncome, 
       totalExpense 

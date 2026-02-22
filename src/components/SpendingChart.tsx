@@ -1,95 +1,74 @@
 "use client";
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useFinance } from '@/lib/contexts/FinanceContext';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 
+const categoryIcons: Record<string, string> = {
+  'Makanan': '🍕',
+  'Transport': '🚗',
+  'Belanja': '🛍️',
+  'Hiburan': '🎮',
+  'Kesehatan': '🏥',
+  'Lainnya': '📦',
+};
+
+// Pastel colors for each rank
+const barColors = ['#E88EAB', '#7EC8E3', '#C4B5E0'];
+
 const SpendingChart = () => {
-  const { transactions, totalExpense } = useFinance();
+  const { transactions } = useFinance();
   const { t } = useLanguage();
 
-  const expenseTransactions = transactions.filter(trans => trans.type === 'expense');
-  
-  // Group by category
-  const categories = expenseTransactions.reduce((acc, trans) => {
-    acc[trans.category] = (acc[trans.category] || 0) + trans.amount;
-    return acc;
-  }, {} as Record<string, number>);
+  const topCategories = useMemo(() => {
+    const expenseTransactions = transactions.filter(t => t.type === 'expense');
+    
+    // Group by category
+    const categoryMap: Record<string, number> = {};
+    expenseTransactions.forEach(trans => {
+      categoryMap[trans.category] = (categoryMap[trans.category] || 0) + trans.amount;
+    });
 
-  const sortedCategories = Object.entries(categories)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 3);
+    // Sort and take top 3
+    return Object.entries(categoryMap)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 3)
+      .map(([category, amount]) => ({ category, amount }));
+  }, [transactions]);
 
-  if (totalExpense === 0) return null;
+  if (topCategories.length === 0) return null;
+
+  const maxAmount = topCategories[0]?.amount || 1;
+
+  const formatCurrency = (amount: number) => {
+    return `Rp ${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(amount)}`;
+  };
 
   return (
-    <div className="chart-container">
-      <h3>{t('spendingDistribution')}</h3>
-      <div className="chart-bars">
-        {sortedCategories.map(([name, amount]) => {
-          const percentage = (amount / totalExpense) * 100;
-          return (
-            <div key={name} className="bar-item">
-              <div className="bar-info">
-                <span>{t(name.toLowerCase())}</span>
-                <span>{Math.round(percentage)}%</span>
-              </div>
-              <div className="bar-track">
-                <div 
-                  className="bar-fill" 
-                  style={{ 
-                    width: `${percentage}%`,
-                    background: name === 'Makanan' ? '#FF9500' : 
-                                name === 'Transport' ? '#5856D6' : 
-                                name === 'Belanja' ? '#FF2D55' : 'var(--primary)'
-                  }}
-                ></div>
+    <div className="top-categories">
+      {topCategories.map((item, index) => {
+        const percentage = (item.amount / maxAmount) * 100;
+        const icon = categoryIcons[item.category] || '📦';
+        
+        return (
+          <div key={item.category} className="top-cat-item">
+            <div className="top-cat-left">
+              <span className="top-cat-rank">{index + 1}</span>
+              <span className="top-cat-icon">{icon}</span>
+              <div className="top-cat-info">
+                <span className="top-cat-name">{t(item.category.toLowerCase())}</span>
+                <span className="top-cat-amount">{formatCurrency(item.amount)}</span>
               </div>
             </div>
-          );
-        })}
-      </div>
-      <style jsx>{`
-        .chart-container {
-          background: var(--surface-elevated);
-          padding: 20px;
-          border-radius: var(--radius);
-          margin-bottom: 32px;
-          border: 1px solid var(--border);
-        }
-        h3 {
-          font-size: 1rem;
-          margin-bottom: 16px;
-        }
-        .chart-bars {
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-        .bar-item {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-        .bar-info {
-          display: flex;
-          justify-content: space-between;
-          font-size: 0.85rem;
-          font-weight: 500;
-        }
-        .bar-track {
-          width: 100%;
-          height: 8px;
-          background: var(--surface);
-          border-radius: 4px;
-          overflow: hidden;
-        }
-        .bar-fill {
-          height: 100%;
-          border-radius: 4px;
-          transition: width 1s ease-out;
-        }
-      `}</style>
+            <div className="top-cat-bar-wrap">
+              <div 
+                className="top-cat-bar" 
+                style={{ width: `${percentage}%`, background: barColors[index] }}
+              />
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };

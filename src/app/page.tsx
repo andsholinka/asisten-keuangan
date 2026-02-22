@@ -1,275 +1,154 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useFinance } from '@/lib/contexts/FinanceContext';
-import { useTheme } from '@/lib/contexts/ThemeContext';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
-import BottomNav from '@/components/BottomNav';
 import SpendingChart from '@/components/SpendingChart';
-import { IncomeIcon, ExpenseIcon, WalletIcon } from '@/components/Icons';
+// We import these but use them specifically
+import { WalletIcon, EyeIcon, EyeOffIcon, ChevronRightIcon, SettingsIcon, AddIcon } from '@/components/Icons';
+import Link from 'next/link';
 
+/**
+ * DASHBOARD PAGE - UPDATED VERSION
+ * - Removed BottomNav
+ * - Added Floating Action Button (FAB)
+ * - 5 Recent Transactions
+ * - Settings in top right
+ * - No Search/Bell icons
+ */
 export default function Dashboard() {
-  const { balance, totalIncome, totalExpense, transactions } = useFinance();
-  const { theme, toggleTheme } = useTheme();
-  const { t } = useLanguage();
+  const { balance, totalIncome, totalExpense, transactions, userProfile } = useFinance();
+  const { t, language } = useLanguage();
+  const [showBalance, setShowBalance] = useState(true);
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      maximumFractionDigits: 0,
+    const formatted = new Intl.NumberFormat('id-ID', {
+      minimumFractionDigits: 0,
     }).format(amount);
+    return `Rp ${formatted}`;
   };
 
   return (
-    <main className="main-content animate-slide-up">
-      <header className="home-header">
-        <div className="header-top">
-          <div>
-            <p className="text-secondary">{t('welcome')} 👋</p>
-            <h1 className="app-title">{t('appName')}</h1>
-            <p className="privacy-badge">🔒 {t('privacyNoteHeader')}</p>
+    <main className="main-content animate-slide-up no-scrollbar">
+      {/* Top Profile Bar - Settings moved to right, search/bell removed */}
+      <header className="profile-header">
+        <div className="profile-info">
+          <div className="avatar">
+            {userProfile.image ? (
+              <img src={userProfile.image} alt="Profile" />
+            ) : (
+              <div className="avatar-placeholder">
+                {userProfile.name.charAt(0)}
+              </div>
+            )}
           </div>
-          <button onClick={toggleTheme} className="theme-toggle">
-            {theme === 'light' ? '🌙' : '☀️'}
-          </button>
+          <div className="user-details">
+            <h3>{userProfile.name}</h3>
+            <p className="privacy-badge-v2">🔒 {t('privacyNoteHeader')}</p>
+          </div>
+        </div>
+        <div className="header-actions">
+          <Link href="/settings" className="icon-action-btn" id="settings-button-top">
+            <SettingsIcon active={true} />
+          </Link>
         </div>
       </header>
 
-      <div className="balance-card">
-        <p className="balance-label">{t('totalBalance')}</p>
-        <h2 className="balance-value">{formatCurrency(balance)}</h2>
-        
-        <div className="stats-row">
-          <div className="stat-item income">
-            <span className="stat-icon"><IncomeIcon /></span>
-            <div>
-              <p className="stat-label">{t('income')}</p>
-              <p className="stat-value">{formatCurrency(totalIncome)}</p>
+      {/* Orange Header Card */}
+      <div className="seabank-header">
+        <div className="header-top-row">
+          <div className="balance-info">
+            <div className="label-row" onClick={() => setShowBalance(!showBalance)}>
+              <span>{t('totalBalance')}</span>
+              {showBalance ? <EyeIcon /> : <EyeOffIcon />}
             </div>
+            <h2 className="balance-text">
+              {showBalance ? formatCurrency(balance) : 'Rp ••••••••'}
+            </h2>
           </div>
-          <div className="stat-divider"></div>
-          <div className="stat-item expense">
-            <span className="stat-icon"><ExpenseIcon /></span>
-            <div>
-              <p className="stat-label">{t('expense')}</p>
-              <p className="stat-value">{formatCurrency(totalExpense)}</p>
+          <Link href="/history" className="history-quick-link">
+            {t('history')} <ChevronRightIcon />
+          </Link>
+        </div>
+
+        <div className="seabank-stats">
+          <Link href="/history?type=income" className="stat-col">
+            <div className="stat-label-item">
+              <span>{t('income')}</span>
+              <ChevronRightIcon />
             </div>
-          </div>
+            <p className="stat-amount">
+              {showBalance ? formatCurrency(totalIncome) : 'Rp ••••••••'}
+            </p>
+          </Link>
+          <Link href="/history?type=expense" className="stat-col">
+            <div className="stat-label-item">
+              <span>{t('expense')}</span>
+              <ChevronRightIcon />
+            </div>
+            <p className="stat-amount">
+              {showBalance ? formatCurrency(totalExpense) : 'Rp ••••••••'}
+            </p>
+          </Link>
         </div>
       </div>
 
-      <section className="recent-section">
-        <div className="section-header">
-          <h3>{t('recentTransactions')}</h3>
-          <a href="/history" className="view-all">{t('viewAll')}</a>
+      {/* Comparison Chart Section */}
+      <section className="white-section chart-card">
+        <div className="section-title-row">
+          <h3>{t('spendingCategory')}</h3>
         </div>
+        <SpendingChart />
+      </section>
+
+      {/* Recent Transactions Section - Extended to 5 items */}
+      <section className="white-section history-card">
+        <Link href="/history" className="section-header-link">
+          <h3>{t('recentTransactions')}</h3>
+          <ChevronRightIcon />
+        </Link>
 
         {transactions.length === 0 ? (
           <div className="empty-state">
             <p>{t('noTransactions')}</p>
           </div>
         ) : (
-          <div className="transaction-list">
+          <div className="mini-transaction-list">
             {transactions.slice(0, 5).map((trans) => (
-              <div key={trans.id} className="transaction-item">
-                <div className="t-icon-box">
-                  <WalletIcon />
+              <div key={trans.id} className="mini-t-item">
+                <div className={`t-icon-indicator ${trans.type}`}>
+                  {trans.icon ? (
+                    <span className="t-icon-emoji">{trans.icon}</span>
+                  ) : (
+                    <WalletIcon />
+                  )}
                 </div>
-                <div className="t-info">
-                  <p className="t-note">{trans.note || trans.category}</p>
-                  <p className="t-cat">{trans.category}</p>
+                <div className="t-main-info">
+                  <p className="t-note-text">{trans.note || trans.category}</p>
+                  <p className="t-subtext">{trans.category}</p>
+                  <p className="t-subtext">
+                    {new Date(trans.date).toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })}, {new Date(trans.date).toLocaleTimeString(language === 'id' ? 'id-ID' : 'en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                  </p>
                 </div>
-                <div className={`t-amount ${trans.type}`}>
-                  {trans.type === 'income' ? '+' : '-'} {formatCurrency(trans.amount)}
+                <div className={`t-amount-text ${trans.type}`}>
+                  {trans.type === 'income' ? '+' : '-'} {formatCurrency(trans.amount).replace('Rp ', '')}
                 </div>
               </div>
             ))}
           </div>
         )}
+        
       </section>
 
-      <section className="chart-section">
-        <h3>{t('spendingCategory')}</h3>
-        <SpendingChart />
-      </section>
-
-      <BottomNav />
-
-      <style jsx>{`
-        .home-header {
-          margin-bottom: 24px;
-        }
-        .header-top {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        .theme-toggle {
-          width: 44px;
-          height: 44px;
-          border-radius: 12px;
-          background: var(--surface-elevated);
-          border: 1px solid var(--border);
-          font-size: 1.2rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .app-title {
-          font-size: 1.8rem;
-          background: var(--primary-gradient);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          margin-bottom: 4px;
-        }
-        .privacy-badge {
-          font-size: 0.7rem;
-          color: var(--success);
-          font-weight: 500;
-          background: rgba(48, 209, 88, 0.1);
-          padding: 2px 8px;
-          border-radius: 20px;
-          display: inline-block;
-        }
-        .balance-card {
-          background: var(--surface-elevated);
-          padding: 24px;
-          border-radius: var(--radius);
-          box-shadow: var(--shadow-md);
-          margin-bottom: 32px;
-          border: 1px solid var(--border);
-        }
-        .balance-label {
-          color: var(--text-secondary);
-          font-size: 0.9rem;
-          margin-bottom: 4px;
-        }
-        .balance-value {
-          font-size: 2.2rem;
-          margin-bottom: 24px;
-          letter-spacing: -1px;
-          font-weight: 800;
-        }
-        .stats-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        .stat-item {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-        .stat-icon {
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .stat-icon :global(svg) {
-          width: 20px;
-          height: 20px;
-        }
-        .income .stat-icon {
-          background: rgba(52, 199, 89, 0.1);
-          color: var(--success);
-        }
-        .expense .stat-icon {
-          background: rgba(255, 59, 48, 0.1);
-          color: var(--danger);
-        }
-        .stat-label {
-          font-size: 0.75rem;
-          color: var(--text-secondary);
-        }
-        .stat-value {
-          font-weight: 600;
-          font-size: 0.95rem;
-        }
-        .stat-divider {
-          width: 1px;
-          height: 30px;
-          background: var(--border);
-        }
-        .section-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 16px;
-        }
-        .view-all {
-          color: var(--primary);
-          font-size: 0.85rem;
-          font-weight: 600;
-        }
-        .transaction-list {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-        .transaction-item {
-          display: flex;
-          align-items: center;
-          padding: 16px;
-          background: var(--surface);
-          border-radius: 16px;
-          gap: 16px;
-        }
-        .t-icon-box {
-          width: 48px;
-          height: 48px;
-          background: var(--surface-elevated);
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border: 1px solid var(--border);
-          color: var(--primary);
-        }
-        .t-icon-box :global(svg) {
-          width: 24px;
-          height: 24px;
-        }
-        .t-info {
-          flex: 1;
-        }
-        .t-note {
-          font-weight: 600;
-          font-size: 0.95rem;
-          margin-bottom: 2px;
-        }
-        .t-cat {
-          font-size: 0.75rem;
-          color: var(--text-secondary);
-        }
-        .t-amount {
-          font-weight: 700;
-          font-size: 0.95rem;
-        }
-        .t-amount.income {
-          color: var(--success);
-        }
-        .t-amount.expense {
-          color: var(--danger);
-        }
-        .chart-section {
-          margin-bottom: 100px;
-        }
-        .chart-section h3 {
-          margin-bottom: 16px;
-        }
-        .empty-state {
-          text-align: center;
-          padding: 40px;
-          color: var(--text-secondary);
-          background: var(--surface-elevated);
-          border-radius: 16px;
-          border: 1px dashed var(--border);
-        }
-      `}</style>
+      {/* Floating Action Button - FIXED BOTTOM RIGHT */}
+      <div className="fab-container">
+        <div className="fab-pulse"></div>
+        <Link href="/add" className="fab-button" id="fab-add-txn">
+          <AddIcon active={true} />
+        </Link>
+      </div>
+      
+      {/* NO BottomNav HERE */}
     </main>
   );
 }

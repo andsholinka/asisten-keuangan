@@ -22,6 +22,13 @@ export const metadata: Metadata = {
   title: "Asisten Keuangan",
   description: "Aplikasi pencatatan keuangan pribadi simpel dan aman",
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/icon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: "/icon-192x192.png",
+  },
 };
 
 export const viewport = {

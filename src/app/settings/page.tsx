@@ -1,16 +1,18 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useFinance } from '@/lib/contexts/FinanceContext';
 import { useTheme } from '@/lib/contexts/ThemeContext';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
-import BottomNav from '@/components/BottomNav';
-import { SettingsIcon, WalletIcon, HistoryIcon, AddIcon } from '@/components/Icons';
+import { WalletIcon, TrashIcon, ChevronRightIcon } from '@/components/Icons';
+import Link from 'next/link';
 
 export default function Settings() {
-  const { transactions } = useFinance();
+  const { transactions, userProfile, updateProfile } = useFinance();
   const { theme, toggleTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [tempName, setTempName] = useState(userProfile.name);
 
   const handleClearData = () => {
     if (confirm(t('clearDataConfirm'))) {
@@ -30,186 +32,145 @@ export default function Settings() {
     URL.revokeObjectURL(url);
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        updateProfile({ image: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const saveName = () => {
+    updateProfile({ name: tempName });
+    setIsEditingName(false);
+  };
+
   return (
-    <main className="main-content animate-slide-up">
-      <header className="page-header">
-        <h1>{t('settings')}</h1>
+    <main className="main-content animate-slide-up no-scrollbar">
+      <header className="seabank-page-header">
+        <Link href="/" className="seabank-header-back">
+          <div style={{ transform: 'rotate(180deg)', display: 'flex' }}>
+            <ChevronRightIcon />
+          </div>
+        </Link>
+        <h1 className="seabank-page-title">{t('settings')}</h1>
       </header>
 
       <section className="settings-section">
-        <div className="profile-brief">
-          <div className="avatar">
-            <SettingsIcon />
-          </div>
-          <div className="user-info">
-            <h3>{t('localUser')}</h3>
-            <p className="text-secondary">{t('storedOnDevice')}</p>
+        <div className="profile-card" style={{ marginTop: '16px' }}>
+          <div className="profile-top">
+            <div className="avatar-wrapper">
+              {userProfile.image ? (
+                <img src={userProfile.image} alt="Profile" className="avatar-img" />
+              ) : (
+                <div className="avatar-placeholder-large">
+                  {userProfile.name.charAt(0)}
+                </div>
+              )}
+              <label className="avatar-edit-badge">
+                <input type="file" accept="image/*" onChange={handleImageUpload} hidden />
+                📷
+              </label>
+            </div>
+            
+            <div className="name-edit-section">
+              {isEditingName ? (
+                <div className="name-input-row">
+                  <input 
+                    type="text" 
+                    value={tempName} 
+                    onChange={(e) => setTempName(e.target.value)}
+                    className="name-input"
+                    autoFocus
+                  />
+                  <button onClick={saveName} className="save-name-btn">Save</button>
+                </div>
+              ) : (
+                <div className="name-display-row" onClick={() => setIsEditingName(true)}>
+                  <h3>{userProfile.name}</h3>
+                  <button className="edit-icon-btn">✏️</button>
+                </div>
+              )}
+              <p className="user-id">ID: {Math.floor(100000 + Math.random() * 900000)}</p>
+            </div>
           </div>
         </div>
 
-        <div className="settings-list">
-          <div className="settings-group">
+        <div className="settings-list-v2">
+          <div className="settings-category">
             <h4>{t('appearance')}</h4>
-            <button className="settings-item" onClick={toggleTheme}>
-              <span className="item-icon">{theme === 'light' ? '🌙' : '☀️'}</span>
-              <span className="item-label">
-                {theme === 'light' ? t('darkMode') : t('lightMode')}
-              </span>
-              <span className="item-status">{theme === 'light' ? t('inactive') : t('active')}</span>
-            </button>
-            <div className="settings-item-static">
-              <span className="item-icon">🌐</span>
-              <span className="item-label">{t('language')}</span>
-              <div className="lang-toggle">
-                <button 
-                  className={`lang-btn ${language === 'id' ? 'active' : ''}`}
-                  onClick={() => setLanguage('id')}
-                >
-                  ID
-                </button>
-                <button 
-                  className={`lang-btn ${language === 'en' ? 'active' : ''}`}
-                  onClick={() => setLanguage('en')}
-                >
-                  EN
-                </button>
+            <div className="settings-panel">
+              <button className="panel-item" onClick={toggleTheme}>
+                <div className="item-icon-box theme">
+                  {theme === 'light' ? '🌙' : '☀️'}
+                </div>
+                <div className="item-text">
+                  <p className="item-title">{theme === 'light' ? t('darkMode') : t('lightMode')}</p>
+                </div>
+                <div className={`toggle-switch ${theme === 'dark' ? 'active' : ''}`}>
+                  <div className="switch-dot"></div>
+                </div>
+              </button>
+
+              <div className="panel-item no-arrow">
+                <div className="item-icon-box lang">🌐</div>
+                <div className="item-text">
+                  <p className="item-title">{t('language')}</p>
+                </div>
+                <div className="lang-selector">
+                  <button 
+                    className={`lang-opt ${language === 'id' ? 'active' : ''}`}
+                    onClick={() => setLanguage('id')}
+                  >ID</button>
+                  <button 
+                    className={`lang-opt ${language === 'en' ? 'active' : ''}`}
+                    onClick={() => setLanguage('en')}
+                  >EN</button>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="settings-group">
+          <div className="settings-category">
             <h4>{t('dataSecurity')}</h4>
-            <button className="settings-item" onClick={handleExportData}>
-              <span className="item-icon"><WalletIcon /></span>
-              <span className="item-label">{t('exportData')}</span>
-            </button>
-            <button className="settings-item" onClick={handleClearData}>
-              <span className="item-icon danger-icon"><HistoryIcon /></span>
-              <span className="item-label danger">{t('clearData')}</span>
-            </button>
+            <div className="settings-panel">
+              <button className="panel-item" onClick={handleExportData}>
+                <div className="item-icon-box export"><WalletIcon /></div>
+                <div className="item-text">
+                  <p className="item-title">{t('exportData')}</p>
+                  <p className="item-subtitle">Download backup data</p>
+                </div>
+                <ChevronRightIcon />
+              </button>
+
+              <button className="panel-item" onClick={handleClearData}>
+                <div className="item-icon-box danger"><TrashIcon /></div>
+                <div className="item-text">
+                  <p className="item-title danger-text">{t('clearData')}</p>
+                  <p className="item-subtitle">{t('clearDataConfirm')}</p>
+                </div>
+                <ChevronRightIcon />
+              </button>
+            </div>
           </div>
 
-          <div className="settings-group">
+          <div className="settings-category">
             <h4>{t('aboutApp')}</h4>
-            <div className="settings-item-static">
-              <span className="item-icon">📱</span>
-              <span className="item-label">{t('version')} 1.0.0 (PWA Ready)</span>
-            </div>
-            <div className="settings-item-static">
-              <span className="item-icon">🛡️</span>
-              <span className="item-label">{t('privacyOffline')}</span>
+            <div className="settings-panel">
+              <div className="panel-item no-arrow">
+                <div className="item-icon-box info">📱</div>
+                <div className="item-text">
+                  <p className="item-title">{t('version')} 2.0.0</p>
+                  <p className="item-subtitle">Made with ❤️</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
-
-      <BottomNav />
-
-      <style jsx>{`
-        .page-header {
-          margin-bottom: 32px;
-        }
-        .profile-brief {
-          display: flex;
-          align-items: center;
-          gap: 20px;
-          padding: 24px;
-          background: var(--surface-elevated);
-          border-radius: var(--radius);
-          margin-bottom: 32px;
-          border: 1px solid var(--border);
-        }
-        .avatar {
-          width: 64px;
-          height: 64px;
-          background: var(--surface);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 2rem;
-        }
-        .user-info h3 {
-          font-size: 1.2rem;
-          margin-bottom: 4px;
-        }
-        .settings-group {
-          margin-bottom: 24px;
-        }
-        .settings-group h4 {
-          font-size: 0.8rem;
-          color: var(--text-secondary);
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          margin-bottom: 12px;
-          padding-left: 8px;
-        }
-        .settings-list {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-        .settings-item, .settings-item-static {
-          width: 100%;
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          padding: 16px;
-          background: var(--surface);
-          border-radius: 16px;
-          text-align: left;
-          border: 1px solid transparent;
-        }
-        .settings-item:active {
-          background: var(--surface-elevated);
-          border-color: var(--border);
-        }
-        .item-icon {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: var(--primary);
-        }
-        .item-icon :global(svg) {
-          width: 20px;
-          height: 20px;
-        }
-        .item-icon.danger-icon {
-          color: var(--danger);
-        }
-        .item-label {
-          font-weight: 500;
-          font-size: 1rem;
-        }
-        .item-label.danger {
-          color: var(--danger);
-        }
-        .item-status {
-          margin-left: auto;
-          font-size: 0.8rem;
-          color: var(--primary);
-          font-weight: 600;
-        }
-        .lang-toggle {
-          margin-left: auto;
-          display: flex;
-          background: var(--surface-elevated);
-          padding: 2px;
-          border-radius: 8px;
-          border: 1px solid var(--border);
-        }
-        .lang-btn {
-          padding: 4px 12px;
-          border-radius: 6px;
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: var(--text-secondary);
-        }
-        .lang-btn.active {
-          background: var(--primary);
-          color: white;
-        }
-      `}</style>
     </main>
   );
 }
