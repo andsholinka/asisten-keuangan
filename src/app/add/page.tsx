@@ -1,3 +1,5 @@
+// src/app/add/page.tsx
+
 "use client";
 
 import React, { useState } from 'react';
@@ -19,7 +21,6 @@ const categories = {
   income: [
     { name: 'Gaji', icon: '💵' },
     { name: 'Bonus', icon: '🧧' },
-    { name: 'Investasi', icon: '📈' },
     { name: 'Lainnya', icon: '💰' },
   ]
 };
@@ -180,16 +181,13 @@ export default function AddTransaction() {
             value={date}
             onChange={(e) => setDate(e.target.value)}
             className="text-input"
+            style={{ width: '100%', boxSizing: 'border-box' }}
           />
         </div>
 
-        <button type="submit" className="submit-btn" style={{ marginBottom: '40px' }}>
+        <button type="submit" className="submit-btn" style={{ marginBottom: '10px' }}>
           {t('saveTransaction')}
         </button>
-
-        <p className="form-privacy-note">
-          🔒 {t('privacyNoteForm')}
-        </p>
       </form>
     </main>
   );

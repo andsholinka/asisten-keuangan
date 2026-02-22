@@ -1,3 +1,5 @@
+// src/app/history/page.tsx
+
 "use client";
 
 import React, { useState, useMemo, Suspense, useCallback } from 'react';
@@ -20,6 +22,7 @@ function HistoryContent() {
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showExportPicker, setShowExportPicker] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null); // State untuk menyimpan hasil gambar laporan
   const [exportRange, setExportRange] = useState({ 
     start: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
     end: new Date().toISOString().split('T')[0] 
@@ -113,12 +116,12 @@ function HistoryContent() {
     const totalExpense = exportTransactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
     const balance = totalIncome - totalExpense;
 
-    // Canvas setup
+    // Canvas setup untuk ukuran mobile (lebar 400px)
     const rowHeight = 44;
-    const headerHeight = 200;
-    const footerHeight = 100;
-    const padding = 40;
-    const canvasWidth = 800;
+    const headerHeight = 180;
+    const footerHeight = 80;
+    const padding = 20;
+    const canvasWidth = 400;
     const canvasHeight = headerHeight + (exportTransactions.length * rowHeight) + footerHeight + padding;
 
     const canvas = document.createElement('canvas');
@@ -127,42 +130,44 @@ function HistoryContent() {
     const ctx = canvas.getContext('2d')!;
 
     // Background
-    ctx.fillStyle = '#fafafa';
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    // Header gradient
+    // Header gradient card
     const grad = ctx.createLinearGradient(0, 0, canvasWidth, 0);
     grad.addColorStop(0, '#E88EAB');
     grad.addColorStop(1, '#7EC8E3');
     ctx.fillStyle = grad;
     ctx.beginPath();
-    ctx.roundRect(padding, padding, canvasWidth - padding * 2, 140, 20);
+    ctx.roundRect(padding, padding, canvasWidth - padding * 2, 120, 16);
     ctx.fill();
 
     // Header text
     ctx.fillStyle = 'white';
-    ctx.font = 'bold 22px -apple-system, BlinkMacSystemFont, sans-serif';
-    ctx.fillText('Asisten Keuangan', padding + 24, padding + 40);
-    ctx.font = '14px -apple-system, BlinkMacSystemFont, sans-serif';
-    ctx.fillText(`${exportRange.start}  →  ${exportRange.end}`, padding + 24, padding + 65);
+    ctx.font = 'bold 20px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.fillText('Asisten Keuangan', padding + 16, padding + 36);
+    ctx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.fillText(`${exportRange.start}  →  ${exportRange.end}`, padding + 16, padding + 56);
 
     // Summary in header
-    ctx.font = 'bold 16px -apple-system, BlinkMacSystemFont, sans-serif';
-    const summaryY = padding + 110;
-    ctx.fillText(`${language === 'id' ? 'Pemasukan' : 'Income'}: ${formatCurrency(totalIncome)}`, padding + 24, summaryY);
-    ctx.fillText(`${language === 'id' ? 'Pengeluaran' : 'Expense'}: ${formatCurrency(totalExpense)}`, padding + 320, summaryY);
+    ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, sans-serif';
+    const summaryY = padding + 94;
+    ctx.fillText(`${language === 'id' ? 'Masuk' : 'In'}: ${formatCurrency(totalIncome)}`, padding + 16, summaryY);
+    ctx.fillText(`${language === 'id' ? 'Keluar' : 'Out'}: ${formatCurrency(totalExpense)}`, padding + 170, summaryY);
 
     // Transactions list
-    let y = headerHeight + 20;
+    let y = headerHeight + 10;
     
     // Table header
     ctx.fillStyle = '#E88EAB';
-    ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, sans-serif';
-    ctx.fillText('No', padding, y);
-    ctx.fillText(language === 'id' ? 'Tanggal' : 'Date', padding + 40, y);
-    ctx.fillText(language === 'id' ? 'Keterangan' : 'Description', padding + 180, y);
-    ctx.fillText(language === 'id' ? 'Tipe' : 'Type', padding + 440, y);
-    ctx.fillText(language === 'id' ? 'Jumlah' : 'Amount', padding + 560, y);
+    ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.fillText(language === 'id' ? 'Tgl' : 'Date', padding, y);
+    ctx.fillText(language === 'id' ? 'Ket' : 'Desc', padding + 55, y);
+    
+    // Amount di kanan
+    ctx.textAlign = 'right';
+    ctx.fillText(language === 'id' ? 'Jumlah' : 'Amount', canvasWidth - padding, y);
+    ctx.textAlign = 'left'; // Kembalikan ke kiri
     
     y += 8;
     ctx.strokeStyle = '#E88EAB';
@@ -176,31 +181,30 @@ function HistoryContent() {
     exportTransactions.forEach((trans, index) => {
       // Zebra striping
       if (index % 2 === 0) {
-        ctx.fillStyle = '#f5f5f5';
-        ctx.fillRect(padding - 8, y - 14, canvasWidth - padding * 2 + 16, rowHeight);
+        ctx.fillStyle = '#f9f9f9';
+        ctx.fillRect(padding - 4, y - 14, canvasWidth - padding * 2 + 8, rowHeight);
       }
       
-      ctx.font = '13px -apple-system, BlinkMacSystemFont, sans-serif';
-      ctx.fillStyle = '#555';
-      ctx.fillText(`${index + 1}`, padding, y + 6);
-
       const dateObj = new Date(trans.date);
-      const dateStr = dateObj.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-      ctx.fillText(dateStr, padding + 40, y + 6);
+      const dateStr = dateObj.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { day: '2-digit', month: '2-digit' });
+      
+      ctx.fillStyle = '#555';
+      ctx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillText(dateStr, padding, y + 6);
       
       ctx.fillStyle = '#333';
-      ctx.font = '13px -apple-system, BlinkMacSystemFont, sans-serif';
-      const desc = (trans.note || trans.category).substring(0, 30);
-      ctx.fillText(desc, padding + 180, y + 6);
+      ctx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
+      // Truncate deskripsi agar tidak menabrak nominal uang
+      const desc = (trans.note || trans.category).substring(0, 20) + ((trans.note || trans.category).length > 20 ? '...' : '');
+      ctx.fillText(desc, padding + 55, y + 6);
 
-      ctx.fillStyle = trans.type === 'income' ? '#7EC8E3' : '#E88EAB';
-      ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, sans-serif';
-      ctx.fillText(trans.type === 'income' ? (language === 'id' ? 'Masuk' : 'In') : (language === 'id' ? 'Keluar' : 'Out'), padding + 440, y + 6);
-      
       const amountStr = `${trans.type === 'income' ? '+' : '-'} ${formatCurrency(trans.amount).replace('Rp ', '')}`;
       ctx.fillStyle = trans.type === 'income' ? '#7EC8E3' : '#E88EAB';
-      ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, sans-serif';
-      ctx.fillText(amountStr, padding + 560, y + 6);
+      ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, sans-serif';
+      
+      ctx.textAlign = 'right';
+      ctx.fillText(amountStr, canvasWidth - padding, y + 6);
+      ctx.textAlign = 'left';
 
       y += rowHeight;
     });
@@ -214,38 +218,37 @@ function HistoryContent() {
     ctx.stroke();
     y += 30;
     
-    const balGrad = ctx.createLinearGradient(padding + 440, 0, canvasWidth - padding, 0);
-    balGrad.addColorStop(0, '#E88EAB');
-    balGrad.addColorStop(1, '#7EC8E3');
     ctx.fillStyle = '#333';
-    ctx.font = 'bold 15px -apple-system, BlinkMacSystemFont, sans-serif';
-    ctx.fillText(language === 'id' ? 'Saldo:' : 'Balance:', padding + 440, y);
+    ctx.font = 'bold 14px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(language === 'id' ? 'Saldo:' : 'Balance:', canvasWidth - padding - 110, y);
     ctx.fillStyle = balance >= 0 ? '#7EC8E3' : '#E88EAB';
-    ctx.font = 'bold 15px -apple-system, BlinkMacSystemFont, sans-serif';
-    ctx.fillText(formatCurrency(balance), padding + 560, y);
+    ctx.fillText(formatCurrency(balance), canvasWidth - padding, y);
+    ctx.textAlign = 'left';
 
     // Watermark
-    ctx.fillStyle = '#ccc';
-    ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
-    ctx.fillText(`Dibuat oleh Asisten Keuangan • ${new Date().toLocaleDateString('id-ID')}`, padding, canvasHeight - 20);
+    ctx.fillStyle = '#bbb';
+    ctx.font = '10px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.fillText(`Asisten Keuangan • ${new Date().toLocaleDateString('id-ID')}`, padding, canvasHeight - 16);
 
-    // Export to PNG and open
+    // Save to state instead of window.open
     const dataUrl = canvas.toDataURL('image/png');
-    const newWindow = window.open();
-    if (newWindow) {
-      newWindow.document.write(`
-        <html><head><title>Laporan Keuangan</title></head>
-        <body style="margin:0;display:flex;justify-content:center;background:#f0f0f0;padding:20px">
-          <img src="${dataUrl}" style="max-width:100%;box-shadow:0 4px 20px rgba(0,0,0,0.1);border-radius:12px" />
-        </body></html>
-      `);
-    }
+    setPreviewImage(dataUrl);
     setShowExportPicker(false);
   }, [transactions, exportRange, language, formatCurrency]);
 
+  const downloadImage = () => {
+    if (previewImage) {
+      const link = document.createElement('a');
+      link.href = previewImage;
+      link.download = `Laporan_Keuangan_${exportRange.start}_${exportRange.end}.png`;
+      link.click();
+    }
+  };
+
   return (
-    <main className="main-content animate-slide-up no-scrollbar" onClick={() => setShowTypeDropdown(false)}>
-      <header className="seabank-page-header">
+    <main className="main-content animate-slide-up no-scrollbar">
+      <header className="seabank-page-header" style={{ paddingTop: '24px' }}>
         <Link href="/" className="seabank-header-back">
           <div style={{ transform: 'rotate(180deg)', display: 'flex' }}>
             <ChevronRightIcon />
@@ -257,27 +260,16 @@ function HistoryContent() {
         </button>
       </header>
 
-      <div className="history-filters">
+      <div className="history-filters" style={{ marginTop: '16px' }}>
         <div className="filter-item" onClick={() => setShowDatePicker(true)}>
           <span>{getDateFilterLabel()}</span>
           <ChevronDownIcon />
         </div>
         <div className="filter-divider"></div>
         
-        <div className="filter-item" onClick={(e) => {
-          e.stopPropagation();
-          setShowTypeDropdown(!showTypeDropdown);
-        }}>
+        <div className="filter-item" onClick={() => setShowTypeDropdown(true)}>
           <span>{filterType === 'all' ? t('allTransactions') : t(filterType)}</span>
           <ChevronDownIcon />
-          
-          {showTypeDropdown && (
-            <div className="filter-dropdown-v2">
-              <button className={`dropdown-opt ${filterType === 'all' ? 'selected' : ''}`} onClick={() => setFilterType('all')}>{t('allTransactions')}</button>
-              <button className={`dropdown-opt ${filterType === 'income' ? 'selected' : ''}`} onClick={() => setFilterType('income')}>{t('income')}</button>
-              <button className={`dropdown-opt ${filterType === 'expense' ? 'selected' : ''}`} onClick={() => setFilterType('expense')}>{t('expense')}</button>
-            </div>
-          )}
         </div>
       </div>
 
@@ -312,6 +304,23 @@ function HistoryContent() {
         </div>
       )}
 
+      {/* Type Filter Picker (Bottom Sheet) */}
+      {showTypeDropdown && (
+        <div className="modal-overlay" onClick={() => setShowTypeDropdown(false)}>
+          <div className="bottom-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="sheet-header">
+              <h2>{language === 'id' ? 'Pilih Tipe Transaksi' : 'Select Transaction Type'}</h2>
+              <button onClick={() => setShowTypeDropdown(false)} className="close-sheet-btn">✕</button>
+            </div>
+            <div className="sheet-option-list">
+              <button className={`sheet-option ${filterType === 'all' ? 'selected' : ''}`} onClick={() => { setFilterType('all'); setShowTypeDropdown(false); }}>{t('allTransactions')}</button>
+              <button className={`sheet-option ${filterType === 'income' ? 'selected' : ''}`} onClick={() => { setFilterType('income'); setShowTypeDropdown(false); }}>{t('income')}</button>
+              <button className={`sheet-option ${filterType === 'expense' ? 'selected' : ''}`} onClick={() => { setFilterType('expense'); setShowTypeDropdown(false); }}>{t('expense')}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Export Period Picker */}
       {showExportPicker && (
         <div className="modal-overlay" onClick={() => setShowExportPicker(false)}>
@@ -333,9 +342,36 @@ function HistoryContent() {
                 <input type="date" max={new Date().toISOString().split('T')[0]} value={exportRange.end} onChange={(e) => setExportRange({...exportRange, end: e.target.value})} className="text-input" />
               </div>
               <button className="period-apply-btn" onClick={handleExportPNG} style={{ background: 'linear-gradient(135deg, #E88EAB, #7EC8E3)', color: 'white', fontWeight: 700 }}>
-                📥 {language === 'id' ? 'Download PNG' : 'Download PNG'}
+                📥 {language === 'id' ? 'Buat Laporan' : 'Generate Report'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Preview Overlay */}
+      {previewImage && (
+        <div className="modal-overlay" style={{ zIndex: 1000, display: 'flex', flexDirection: 'column', padding: '20px', backgroundColor: 'rgba(0,0,0,0.85)' }}>
+          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px' }}>
+            <img 
+              src={previewImage} 
+              alt="Report Preview" 
+              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }} 
+            />
+          </div>
+          <div style={{ display: 'flex', gap: '12px', paddingBottom: '20px' }}>
+            <button 
+              onClick={() => setPreviewImage(null)} 
+              style={{ flex: 1, padding: '14px', borderRadius: '12px', background: 'white', color: '#333', fontWeight: 'bold', border: 'none' }}
+            >
+              {language === 'id' ? 'Kembali' : 'Back'}
+            </button>
+            <button 
+              onClick={downloadImage} 
+              style={{ flex: 1, padding: '14px', borderRadius: '12px', background: 'linear-gradient(135deg, #E88EAB, #7EC8E3)', color: 'white', fontWeight: 'bold', border: 'none' }}
+            >
+              {language === 'id' ? 'Simpan Galeri' : 'Save to Gallery'}
+            </button>
           </div>
         </div>
       )}
