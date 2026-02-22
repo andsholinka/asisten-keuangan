@@ -1,0 +1,21 @@
+{
+  "name": "Asisten Keuangan",
+  "short_name": "AsistenKu",
+  "description": "Aplikasi pencatatan keuangan pribadi yang simpel dan aman.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0070f3",
+  "icons": [
+    {
+      "src": "/app_icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/app_icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
