@@ -78,15 +78,23 @@ export default function Settings() {
             
             <div className="name-edit-section">
               {isEditingName ? (
-                <div className="name-input-row">
+                <div className="name-edit-active">
                   <input 
                     type="text" 
                     value={tempName} 
                     onChange={(e) => setTempName(e.target.value)}
                     className="name-input"
                     autoFocus
+                    onKeyDown={(e) => e.key === 'Enter' && saveName()}
                   />
-                  <button onClick={saveName} className="save-name-btn">Save</button>
+                  <div className="name-edit-actions">
+                    <button onClick={() => { setIsEditingName(false); setTempName(userProfile.name); }} className="cancel-name-btn">
+                      {language === 'id' ? 'Batal' : 'Cancel'}
+                    </button>
+                    <button onClick={saveName} className="save-name-btn">
+                      {language === 'id' ? 'Simpan' : 'Save'}
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="name-display-row" onClick={() => setIsEditingName(true)}>
@@ -94,7 +102,7 @@ export default function Settings() {
                   <button className="edit-icon-btn">✏️</button>
                 </div>
               )}
-              <p className="user-id">ID: {Math.floor(100000 + Math.random() * 900000)}</p>
+              {/* <p className="user-id">ID: {Math.floor(100000 + Math.random() * 900000)}</p> */}
             </div>
           </div>
         </div>
@@ -163,7 +171,7 @@ export default function Settings() {
               <div className="panel-item no-arrow">
                 <div className="item-icon-box info">📱</div>
                 <div className="item-text">
-                  <p className="item-title">{t('version')} 2.0.0</p>
+                  <p className="item-title">{t('version')} 1.0.0</p>
                   <p className="item-subtitle">Made with ❤️</p>
                 </div>
               </div>

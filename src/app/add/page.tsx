@@ -33,7 +33,11 @@ export default function AddTransaction() {
   const [amount, setAmount] = useState(''); 
   const [category, setCategory] = useState('');
   const [note, setNote] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const getLocalDateStr = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+  const [date, setDate] = useState(getLocalDateStr());
   const [error, setError] = useState('');
 
   const formatWithDots = (val: string) => {
@@ -172,7 +176,7 @@ export default function AddTransaction() {
           <label>{t('date')}</label>
           <input 
             type="date" 
-            max={new Date().toISOString().split('T')[0]}
+            max={`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`}
             value={date}
             onChange={(e) => setDate(e.target.value)}
             className="text-input"

@@ -35,14 +35,14 @@ export const translations: Translations = {
   
   // Add Transaction
   addTransaction: { id: 'Tambah Transaksi', en: 'Add Transaction' },
-  nominal: { id: 'Nominal', en: 'Amount' },
-  category: { id: 'Kategori', en: 'Category' },
-  noteOptional: { id: 'Catatan (Opsional)', en: 'Note (Optional)' },
-  notePlaceholder: { id: 'Keterangan transaksi...', en: 'Transaction description...' },
-  date: { id: 'Tanggal', en: 'Date' },
+  nominal: { id: '💰 Berapa jumlahnya?', en: '💰 How much?' },
+  category: { id: '🏷️ Buat apa nih?', en: '🏷️ What for?' },
+  noteOptional: { id: '📝 Mau dikasih catatan?', en: '📝 Any notes?' },
+  notePlaceholder: { id: 'Tulis keterangan di sini...', en: 'Write a note here...' },
+  date: { id: '📅 Kapan transaksinya?', en: '📅 When was it?' },
   saveTransaction: { id: 'Simpan Transaksi', en: 'Save Transaction' },
-  nominalRequired: { id: 'Nominal harus diisi ya', en: 'Please enter the amount' },
-  categoryRequired: { id: 'Pilih kategori dulu ya', en: 'Please select a category' },
+  nominalRequired: { id: 'Isi dulu nominalnya ya 😊', en: 'Please enter the amount 😊' },
+  categoryRequired: { id: 'Pilih kategori dulu ya 😊', en: 'Please select a category 😊' },
   
   // History
   noTransactionsHistory: { id: 'Belum ada riwayat transaksi', en: 'No transaction history yet' },
