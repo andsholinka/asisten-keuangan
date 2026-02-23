@@ -14,7 +14,7 @@ export const translations: Translations = {
   // Common
   appName: { id: 'Asisten Keuangan', en: 'Asisten Keuangan' },
   welcome: { id: 'Selamat Datang', en: 'Welcome' },
-  privacyNoteHeader: { id: 'semua data hanya tersimpan di HP kamu,', en: 'all data is only stored on your phone,' },
+  privacyNoteHeader: { id: 'semua data hanya tersimpan di HP kamu', en: 'all data is only stored on your phone' },
   privacyNoteForm: { id: 'Data ini hanya akan disimpan di HP kamu secara lokal.', en: 'This data will only be stored locally on your phone.' },
   
   // Navigation

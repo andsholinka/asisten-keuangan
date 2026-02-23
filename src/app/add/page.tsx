@@ -173,9 +173,9 @@ export default function AddTransaction() {
           />
         </div>
 
-        <div className="date-submit-row">
-          <div className="input-group date-field-group">
-            <label>{t('date')}</label>
+        <div className="input-group">
+          <label>{t('date')}</label>
+          <div className="date-submit-row">
             <input 
               type="date" 
               max={`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`}
@@ -184,11 +184,11 @@ export default function AddTransaction() {
               className="text-input date-input-inline"
               style={{ boxSizing: 'border-box' }}
             />
-          </div>
 
-          <button type="submit" className="submit-btn submit-btn-inline">
-            {t('saveTransaction')}
-          </button>
+            <button type="submit" className="submit-btn submit-btn-inline">
+              {t('saveTransaction')}
+            </button>
+          </div>
         </div>
       </form>
     </main>

@@ -1,14 +1,14 @@
-const CACHE_NAME = 'asisten-keuangan-v1';
-const ASSETS_TO_CACHE = [
-  '/',
+const CACHE_NAME = 'asisten-keuangan-v2';
+const STATIC_ASSETS = [
   '/manifest.json',
-  '/app_icon.png',
+  '/icon-192x192.png',
+  '/icon-512x512.png',
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
+      return cache.addAll(STATIC_ASSETS);
     })
   );
   self.skipWaiting();
@@ -30,9 +30,28 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+
+  const url = new URL(event.request.url);
+
+  // Always prefer fresh HTML/app shell for page navigations.
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match('/'))
+    );
+    return;
+  }
+
+  // Cache-first for tiny static app assets.
+  if (url.origin === self.location.origin && STATIC_ASSETS.includes(url.pathname)) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => cached || fetch(event.request))
+    );
+    return;
+  }
+
+  // Network-first for everything else to reduce stale UI issues.
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
+    fetch(event.request).catch(() => caches.match(event.request))
   );
 });
