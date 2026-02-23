@@ -2,22 +2,18 @@
 
 "use client";
 
-import React, { useState, useMemo, Suspense, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useFinance, Transaction } from '@/lib/contexts/FinanceContext';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { WalletIcon, TrashIcon, ChevronDownIcon, DownloadIcon, ChevronRightIcon } from '@/components/Icons';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 
 type DateFilterType = 'today' | 'thisMonth' | 'thisYear' | 'period' | 'last30';
 
-function HistoryContent() {
+export default function History() {
   const { transactions, deleteTransaction } = useFinance();
   const { t, language } = useLanguage();
-  const searchParams = useSearchParams();
-  const initialType = searchParams.get('type') as 'income' | 'expense' | null;
-  
-  const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>(initialType || 'all');
+  const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
   const [dateFilter, setDateFilter] = useState<DateFilterType>('thisMonth');
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -31,6 +27,13 @@ function HistoryContent() {
     start: new Date().toISOString().split('T')[0], 
     end: new Date().toISOString().split('T')[0] 
   });
+
+  useEffect(() => {
+    const typeParam = new URLSearchParams(window.location.search).get('type');
+    if (typeParam === 'income' || typeParam === 'expense') {
+      setFilterType(typeParam);
+    }
+  }, []);
 
   const formatCurrency = (amount: number) => {
     const formatted = new Intl.NumberFormat('id-ID', {
@@ -247,7 +250,7 @@ function HistoryContent() {
   };
 
   return (
-    <main className="main-content animate-slide-up no-scrollbar">
+    <main className="main-content no-scrollbar">
       <header className="seabank-page-header" style={{ paddingTop: '24px' }}>
         <Link href="/" className="seabank-header-back">
           <div style={{ transform: 'rotate(180deg)', display: 'flex' }}>
@@ -421,13 +424,5 @@ function HistoryContent() {
         )}
       </section>
     </main>
-  );
-}
-
-export default function History() {
-  return (
-    <Suspense fallback={<div className="main-content"><p>Loading...</p></div>}>
-      <HistoryContent />
-    </Suspense>
   );
 }

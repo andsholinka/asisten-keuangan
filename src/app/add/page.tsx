@@ -95,7 +95,7 @@ export default function AddTransaction() {
   };
 
   return (
-    <main className="main-content animate-slide-up no-scrollbar">
+    <main className="main-content no-scrollbar">
       <header className="seabank-page-header">
         <Link href="/" className="seabank-header-back">
           <div style={{ transform: 'rotate(180deg)', display: 'flex' }}>
@@ -173,21 +173,23 @@ export default function AddTransaction() {
           />
         </div>
 
-        <div className="input-group">
-          <label>{t('date')}</label>
-          <input 
-            type="date" 
-            max={`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`}
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="text-input"
-            style={{ width: '100%', boxSizing: 'border-box' }}
-          />
-        </div>
+        <div className="date-submit-row">
+          <div className="input-group date-field-group">
+            <label>{t('date')}</label>
+            <input 
+              type="date" 
+              max={`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`}
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="text-input date-input-inline"
+              style={{ boxSizing: 'border-box' }}
+            />
+          </div>
 
-        <button type="submit" className="submit-btn" style={{ marginBottom: '10px' }}>
-          {t('saveTransaction')}
-        </button>
+          <button type="submit" className="submit-btn submit-btn-inline">
+            {t('saveTransaction')}
+          </button>
+        </div>
       </form>
     </main>
   );

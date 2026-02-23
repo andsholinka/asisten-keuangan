@@ -1029,6 +1029,37 @@ a {
   opacity: 0.8;
   transform: scale(0.98);
 }
+.date-submit-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+.date-field-group {
+  flex: 1;
+  min-width: 0;
+}
+.date-input-inline {
+  height: 54px;
+}
+.submit-btn-inline {
+  margin-top: 0;
+  margin-bottom: 0;
+  height: 54px;
+  padding: 0 18px;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+@media (max-width: 420px) {
+  .date-submit-row {
+    gap: 10px;
+  }
+  .submit-btn-inline {
+    padding: 0 14px;
+    font-size: 0.9rem;
+  }
+}
 .form-privacy-note {
   text-align: center;
   font-size: 0.75rem;

@@ -49,7 +49,7 @@ export default function Settings() {
   };
 
   return (
-    <main className="main-content animate-slide-up no-scrollbar">
+    <main className="main-content no-scrollbar">
       <header className="seabank-page-header">
         <Link href="/" className="seabank-header-back">
           <div style={{ transform: 'rotate(180deg)', display: 'flex' }}>

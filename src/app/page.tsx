@@ -29,7 +29,7 @@ export default function Dashboard() {
   };
 
   return (
-    <main className="main-content animate-slide-up no-scrollbar">
+    <main className="main-content no-scrollbar">
       {/* Top Profile Bar - Settings moved to right, search/bell removed */}
       <header className="profile-header">
         <div className="profile-info">
